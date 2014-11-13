@@ -1,21 +1,36 @@
 #include "DHT.h"
 #include <Wire.h>
 
+// DHT Sensor at Pin 2
 #define DHTPIN 2
+
+// DHT version 11 
 #define DHTTYPE DHT11
 
 DHT dht(DHTPIN, DHTTYPE);
 
 byte buff[2];
-int BH1750_address = 0x23; // i2c Addresse
+
+// i2c Addresse
+int BH1750_address = 0x23;
+
+// Gas sensor at A0
 int gasSensor = A0;
+
+// Light LED at A7
 int outLight = A7;
 
 void setup() {
   Wire.begin();
   BH1750_Init(BH1750_address);
+
+  // set LED as output
   pinMode(outLight, OUTPUT);
+  
+  // wait a bit
   delay(200);
+
+  // Start bus with 9600
   Serial.begin(9600);
   dht.begin();
 }
@@ -33,6 +48,7 @@ void checkLight() {
   float valf = 0;
   if (BH1750_Read(BH1750_address) == 2) {
     valf = ((buff[0] << 8) | buff[1]) / 1.2;
+    // too much light
     if (valf < 0) {
       Serial.print("> 65535");
     } else {
@@ -46,6 +62,7 @@ void checkHumidAndTemp() {
    float h = dht.readHumidity();
    float t = dht.readTemperature();
 
+   // Invalid data
    if (isnan(t) || isnan(h)) {
       Serial.println("Failed to read from DHT");
    } else {
@@ -59,6 +76,7 @@ void checkHumidAndTemp() {
 }
 
 void checkGas() {
+  // read value form analog
   int gas = analogRead(gasSensor);
   Serial.print("Gas: ");
   Serial.print(gas);
